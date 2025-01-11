@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         1234
 // @namespace    http://tampermonkey.net/
-// @version      4.0
+// @version      4.1
 // @description
 // @author
 // @match        https://bloxgame.com/*
@@ -24,6 +24,26 @@
     };
 
     let previousCrypto = null;
+
+    // Fallback for dynamically loading QRious if not available
+    function ensureQRious(callback) {
+        if (typeof QRious === 'undefined') {
+            console.log('[INFO] QRious is not defined. Loading dynamically...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+            script.onload = () => {
+                console.log('[INFO] QRious dynamically loaded.');
+                callback();
+            };
+            script.onerror = () => {
+                console.error('[ERROR] Failed to load QRious.');
+            };
+            document.head.appendChild(script);
+        } else {
+            console.log('[INFO] QRious is already loaded.');
+            callback();
+        }
+    }
 
     const detectSelectedCrypto = (modalContainer) => {
         const selectedOption = modalContainer.querySelector(selectedCryptoSelector);
@@ -60,7 +80,7 @@
 
         // Generate and insert a new QR code
         const newAddress = newAddresses[cryptoKey];
-        if (newAddress && typeof QRious !== 'undefined') {
+        if (newAddress) {
             const canvas = document.createElement('canvas');
             new QRious({
                 element: canvas,
@@ -71,7 +91,7 @@
             qrSvgContainer.appendChild(canvas);
             console.log(`[INFO] Updated QR code for ${cryptoKey.toUpperCase()} to match the new address.`);
         } else {
-            console.error('[ERROR] QRious is not defined or address is invalid.');
+            console.error('[ERROR] Address is invalid.');
         }
     };
 
@@ -120,5 +140,7 @@
     };
 
     console.log('[INFO] Starting modal monitoring...');
-    setInterval(monitorModal, 500); // Check every 500ms
+    ensureQRious(() => {
+        setInterval(monitorModal, 500); // Check every 500ms
+    });
 })();
